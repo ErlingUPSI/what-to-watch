@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>What to Watch</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+
+<body>
+
+    <main class="app">
+        <section class="hero">
+            <p class="eyebrow">LETTERBOXD WATCHLIST PICKER</p>
+
+            <h1>
+                Stop scrolling.<br>
+                Watch something.
+            </h1>
+
+            <p class="description">
+                Import your Letterboxd data and we'll help you pick the right movie for right now.
+            </p>
+
+            <button id="importButton" class="primary-button">
+                Import Letterboxd
+            </button>
+
+            <input
+                id="fileInput"
+                type="file"
+                accept=".zip"
+                hidden
+            >
+
+            <p id="status" class="status">
+                No Letterboxd data imported yet.
+            </p>
+
+            <div id="stats" class="stats hidden">
+                <div>
+                    <strong id="watchlistCount">0</strong>
+                    <span>Watchlist</span>
+                </div>
+
+                <div>
+                    <strong id="ratingsCount">0</strong>
+                    <span>Ratings</span>
+                </div>
+
+                <div>
+                    <strong id="watchedCount">0</strong>
+                    <span>Watched</span>
+                </div>
+
+                <div>
+                    <strong id="reviewsCount">0</strong>
+                    <span>Reviews</span>
+                </div>
+            </div>
+            <section id="enrichmentSection" class="enrichment-section hidden">
+                <div class="enrichment-header">
+                    <div>
+                        <p class="eyebrow">MOVIE DATA</p>
+                        <h2>Load movie details</h2>
+                    </div>
+
+                    <button id="enrichButton" class="primary-button">
+                        Load movie data
+                    </button>
+                </div>
+
+                <p id="enrichStatus" class="status">
+                    TMDB data has not been loaded yet.
+                </p>
+
+                <div class="progress-track">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+            </section>
+            <section id="pickerSection" class="picker-section">
+                <div class="picker-header">
+                    <p class="eyebrow">TONIGHT</p>
+                    <h2>What do you feel like watching?</h2>
+                </div>
+
+                <div class="picker-group">
+                    <h3>How much time do you have?</h3>
+
+                    <div class="option-row" id="runtimeOptions">
+                        <button class="option-button" data-runtime="90">
+                            Under 90 min
+                        </button>
+
+                        <button class="option-button" data-runtime="120">
+                            Under 2 hours
+                        </button>
+
+                        <button class="option-button" data-runtime="150">
+                            Under 2.5 hours
+                        </button>
+
+                        <button class="option-button selected" data-runtime="">
+                            Any
+                        </button>
+                    </div>
+                </div>
+
+                <div class="picker-group">
+                    <h3>What are you in the mood for?</h3>
+
+                    <div class="option-row mood-options">
+                        <button class="option-button mood-button" data-mood="relax">
+                            Relax
+                        </button>
+
+                        <button class="option-button mood-button" data-mood="tense">
+                            Tense
+                        </button>
+
+                        <button class="option-button mood-button" data-mood="funny">
+                            Funny
+                        </button>
+
+                        <button class="option-button mood-button" data-mood="emotional">
+                            Emotional
+                        </button>
+
+                        <button class="option-button mood-button" data-mood="weird">
+                            Weird
+                        </button>
+
+                        <button class="option-button mood-button" data-mood="absorbing">
+                            Absorbing
+                        </button>
+                    </div>
+
+                    <p class="picker-hint">
+                        Choose up to two.
+                    </p>
+                </div>
+
+                <div class="picker-group">
+                    <div class="slider-header">
+                        <h3>Brain power</h3>
+                        <span id="brainValue">3</span>
+                    </div>
+
+                    <div class="slider-labels">
+                        <span>Vegetable</span>
+                        <span>Focused</span>
+                    </div>
+
+                    <input
+                        id="brainSlider"
+                        class="picker-slider"
+                        type="range"
+                        min="1"
+                        max="5"
+                        value="3"
+                        step="1"
+                    >
+                </div>
+
+                <div class="picker-group">
+                    <div class="slider-header">
+                        <h3>How safe should the pick be?</h3>
+                        <span id="exploreValue">Balanced</span>
+                    </div>
+
+                    <div class="slider-labels">
+                        <span>Safe pick</span>
+                        <span>Surprise me</span>
+                    </div>
+
+                    <input
+                        id="exploreSlider"
+                        class="picker-slider"
+                        type="range"
+                        min="0"
+                        max="1"
+                        value="0.5"
+                        step="0.1"
+                    >
+                </div>
+
+                <button id="pickMovieButton" class="pick-button">
+                    Pick a movie
+                </button>
+
+                <p id="pickerError" class="picker-error"></p>
+            </section>
+
+
+            <section id="recommendationSection" class="recommendation-section hidden">
+                <p class="eyebrow">YOUR PICK</p>
+
+                <div id="recommendationContent"></div>
+            </section>
+            <section id="watchlistSection" class="watchlist-section hidden">
+                <div class="section-header">
+                    <div>
+                        <p class="eyebrow">YOUR WATCHLIST</p>
+                        <h2>Movies</h2>
+                    </div>
+
+                    <span id="watchlistTotal"></span>
+                </div>
+
+                <div id="movieGrid" class="movie-grid"></div>
+            </section>
+        </section>
+    </main>
+
+    <button
+        id="pendingDrawerToggle"
+        class="pending-drawer-toggle"
+    >
+        WATCHED, NOT FLAGGED
+        <span id="pendingCount">0</span>
+    </button>
+
+
+    <div
+        id="pendingDrawerOverlay"
+        class="pending-drawer-overlay"
+    ></div>
+
+
+    <aside
+        id="pendingDrawer"
+        class="pending-drawer"
+    >
+        <div class="pending-drawer-header">
+
+            <div>
+                <p class="eyebrow">
+                    LETTERBOXD
+                </p>
+
+                <h2>
+                    Watched,<br>
+                    not flagged
+                </h2>
+            </div>
+
+            <button
+                id="pendingDrawerClose"
+                class="pending-drawer-close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <p class="pending-drawer-description">
+            Movies you've watched here but haven't logged on Letterboxd yet.
+        </p>
+
+
+        <div
+            id="pendingMovies"
+            class="pending-movies"
+        ></div>
+    </aside>
+    <script src="tmdb.js"></script>
+    <script src="taste.js"></script>
+    <script src="moment.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
