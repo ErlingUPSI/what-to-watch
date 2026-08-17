@@ -1025,9 +1025,9 @@ async function enrichWatchlistMovies(movies) {
             // Сохраняемся после каждого фильма.
             // Если страницу закрыть посередине,
             // уже обработанные данные не потеряются.
-            saveMovies(mergedMovies);
+            saveMovies(movies);
 
-            renderWatchlist(mergedMovies);
+            renderWatchlist(movies);
             renderPendingMovies();
         }
     }
